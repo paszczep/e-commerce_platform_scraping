@@ -5,10 +5,12 @@ from offer import write_data_from_listing_page
 from time import sleep
 
 
-driver = webdriver.Firefox()
+platform_url = 'https://allegro.pl/'
 search_phrase = 'french press'
 
-driver.get('https://allegro.pl/')
+driver = webdriver.Firefox()
+
+driver.get(platform_url)
 driver.find_element(By.CSS_SELECTOR, 'body').send_keys(Keys.ENTER)
 
 searchbar_xpath = "//input[@placeholder='czego szukasz?']"
@@ -20,7 +22,7 @@ body = driver.find_element(By.CSS_SELECTOR, 'body')
 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 write_data_from_listing_page(driver)
 for page_number in range(2, 51):
-    url_str = f"https://allegro.pl/listing?string={search_phrase}&p={str(page_number)}"
+    url_str = f"{platform_url}/listing?string={search_phrase}&p={str(page_number)}"
     driver.get(url_str)
     if page_number == 1:
         driver.find_element(By.CSS_SELECTOR, 'body').send_keys(Keys.ENTER)

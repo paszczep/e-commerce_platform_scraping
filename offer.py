@@ -73,42 +73,28 @@ def get_offer_info(offer_driver: webdriver, offer_url: str):
     return info_list
 
 
-def no_element_except(func, *args):
+def try_captcha_except(func, *args):
     try:
-        func(*args)
+        value = func(*args)
+        return value
     except NoSuchElementException:
         what_next = input("'Enter' to continue, input to skip ")
         if not bool(what_next):
-            value = no_element_except(func, *args)
+            value = try_captcha_except(func, *args)
             return value
-        else:
-            pass
 
 
 def write_data_from_listing_page(page_driver: webdriver):
     listing_source = page_driver.page_source
     soup = BeautifulSoup(listing_source, 'html.parser')
     all_hrefs = soup.find_all('a', href=True)
-    all_links = [link['href'] for link in all_hrefs if '/oferta/' in link['href']]
+    all_links = [link['href'] for link in all_hrefs if '/oferta/' in link['href']][:3]
     all_links = unique_list(all_links)
     body = page_driver.find_element(By.CSS_SELECTOR, 'body')
     body.send_keys(Keys.ENTER)
     data_rows = []
     for link in all_links:
-        data_row = no_element_except(get_offer_info, page_driver, link)
+        data_row = try_captcha_except(get_offer_info, page_driver, link)
         data_rows.append(data_row)
     write_to_csv_file(data_rows)
 
-
-if __name__ == '__main__':
-    driver = webdriver.Firefox()
-    offer_url_list = [
-        'https://allegro.pl/oferta/ekspres-cisnieniowy-philips-lattego-ep2235-40-10884803397',
-        'https://allegro.pl/oferta/ekspres-do-kawy-cisnieniowy-philips-ep3241-50-11331271358',
-        'https://allegro.pl/oferta/ekspres-cisnieniowy-philips-lattego-ep2231-40-10884803494',
-        'https://allegro.pl/oferta/maszyna-do-kawy-espresso-ekspres-do-kawy-300-w-12574279970'
-    ]
-
-    for offer_url in offer_url_list:
-        data = get_offer_info(driver, offer_url)
-        print(data[-1])
